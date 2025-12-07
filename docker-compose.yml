@@ -1,8 +1,6 @@
 services:
   cs16-server:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: jlucaso/cs16-server:latest
     container_name: cs16-server
     ports:
       - "${SERVER_PORT:-27015}:27015/udp"
