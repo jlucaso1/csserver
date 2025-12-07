@@ -1,0 +1,45 @@
+services:
+  cs16-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cs16-server
+    ports:
+      - "${SERVER_PORT:-27015}:27015/udp"
+      - "${SERVER_PORT:-27015}:27015/tcp"
+    restart: unless-stopped
+    environment:
+      # Server Identity
+      SERVER_NAME: "${SERVER_NAME:-My CS 1.6 Server}"
+      SERVER_PASSWORD: "${SERVER_PASSWORD:-}"
+      RCON_PASSWORD: "${RCON_PASSWORD:-changeme}"
+
+      # Server Settings
+      SERVER_PORT: "${SERVER_PORT:-27015}"
+      MAX_PLAYERS: "${MAX_PLAYERS:-16}"
+      START_MAP: "${START_MAP:-de_dust2}"
+      SERVER_REGION: "${SERVER_REGION:-255}"
+
+      # Game Settings
+      MP_TIMELIMIT: "${MP_TIMELIMIT:-30}"
+      MP_ROUNDTIME: "${MP_ROUNDTIME:-5}"
+      MP_FREEZETIME: "${MP_FREEZETIME:-6}"
+      MP_BUYTIME: "${MP_BUYTIME:-90}"
+      MP_C4TIMER: "${MP_C4TIMER:-45}"
+      MP_STARTMONEY: "${MP_STARTMONEY:-800}"
+      MP_FRIENDLYFIRE: "${MP_FRIENDLYFIRE:-0}"
+      MP_AUTOTEAMBALANCE: "${MP_AUTOTEAMBALANCE:-1}"
+      MP_LIMITTEAMS: "${MP_LIMITTEAMS:-2}"
+
+      # Server Performance
+      SYS_TICRATE: "${SYS_TICRATE:-1000}"
+      SV_MAXRATE: "${SV_MAXRATE:-25000}"
+      SV_MINRATE: "${SV_MINRATE:-5000}"
+      SV_MAXUPDATERATE: "${SV_MAXUPDATERATE:-102}"
+      SV_MINUPDATERATE: "${SV_MINUPDATERATE:-10}"
+      FPS_MAX: "${FPS_MAX:-1000}"
+
+      # Optional settings (uncomment or set via env)
+      MAPCYCLE: "${MAPCYCLE:-}"
+      SERVER_MOTD: "${SERVER_MOTD:-}"
+      SERVER_EXTRA_CFG: "${SERVER_EXTRA_CFG:-}"
