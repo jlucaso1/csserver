@@ -7,6 +7,22 @@ ARCH=$(uname -m)
 # Default server parameters
 SERVER_PORT="${SERVER_PORT:-27015}"
 
+# Verify HLDS installation
+verify_hlds() {
+    if [ ! -d "${HLDS_DIR}/cstrike" ]; then
+        echo "ERROR: HLDS cstrike directory not found at ${HLDS_DIR}/cstrike"
+        echo "The game files may not have been properly installed during build."
+        echo "Contents of ${HLDS_DIR}:"
+        ls -la "${HLDS_DIR}" 2>/dev/null || echo "  (directory does not exist)"
+        exit 1
+    fi
+
+    if [ ! -f "${HLDS_DIR}/hlds_run" ]; then
+        echo "ERROR: hlds_run not found at ${HLDS_DIR}/hlds_run"
+        exit 1
+    fi
+}
+
 # Generate server.cfg from environment variables
 generate_server_cfg() {
     local cfg_file="${HLDS_DIR}/cstrike/server.cfg"
@@ -86,6 +102,7 @@ generate_motd() {
 # Main setup
 cd "${HLDS_DIR}"
 
+verify_hlds
 generate_server_cfg
 generate_mapcycle
 generate_motd
@@ -116,7 +133,20 @@ echo "============================================"
 # Run the server based on architecture
 if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
     echo "Platform: ARM64 (using box86)"
-    exec box86 ./hlds_run ${HLDS_ARGS}
+
+    # Create wrapper to run hlds_linux through box86
+    # hlds_run is a shell script that calls ./hlds_linux
+    # We need to intercept that call with box86
+    if [ ! -f "${HLDS_DIR}/hlds_linux.real" ]; then
+        mv "${HLDS_DIR}/hlds_linux" "${HLDS_DIR}/hlds_linux.real"
+        cat > "${HLDS_DIR}/hlds_linux" << 'WRAPPER'
+#!/bin/bash
+exec box86 "$(dirname "$0")/hlds_linux.real" "$@"
+WRAPPER
+        chmod +x "${HLDS_DIR}/hlds_linux"
+    fi
+
+    exec ./hlds_run ${HLDS_ARGS}
 else
     echo "Platform: x86_64"
     exec ./hlds_run ${HLDS_ARGS}
